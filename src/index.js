@@ -180,32 +180,27 @@ const handleResetSelectionClick = (_signal, signalValue) => {
   try {
     if (signalValue.selectionIsOn) {
       // const currentData = vegaView.data("table");
-
       // const selection = vegaView.data("chartStruct")[0].columnsData.selection
       //   .name;
-
       // const datumTuplesToModify = [];
-
       // currentData.forEach((datum) => {
       //   if (datum[selection] > 0) {
       //     datumTuplesToModify.push({
       //       datum,
-      //       field: [selection],
+      //       field: selection,
       //       value: 0
       //     });
       //   }
       // });
-
       // applyChanges(vegaView, "table", { datumTuplesToModify });
       // runVega(vegaView, "table");
-
+      // vegaView.runAsync()
       // console.log("reset signalValue", signalValue);
       // console.log('reset values', createUnselectAllDatamarksChangesNEW(
       //   vegaView,
       //   signalValue.chartStructure.columnsData,
       //   "table"
       // ))
-
       // applyChanges(
       //   vegaView,
       //   "table",
@@ -239,6 +234,7 @@ const handleMarkSelectionClick = (_signal, signalValue) => {
       )
     );
     runVega(vegaView, "table");
+    vegaView.runAsync();
 
     // Call the API.
     // getSimpleSelectionOpForApi({
@@ -398,7 +394,7 @@ const handleYSliceSelectionBrush = (_signal, signalValue) => {
 
 document.getElementById("app").innerHTML = `<div id="vega-container"></div>`;
 
-vegaEmbed("#vega-container", vegaSpec(500, 250, chartStruct), {
+vegaEmbed("#vega-container", vegaSpec(150, 120, chartStruct), {
   mode: "vega"
 })
   .then((result) => {

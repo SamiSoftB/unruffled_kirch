@@ -1376,6 +1376,7 @@ const vegaSpec = (width, height, chartStruct) => {
       on: [
         {
           events: "view:click",
+          filter: ["!@outlinesHover:click"],
           update: `{ selectionIsOn: selectionIsOn,       
               chartStructure: data('chartStruct')[0],           
               unionDomain: unionDomain,             
@@ -1426,7 +1427,7 @@ const vegaSpec = (width, height, chartStruct) => {
       value: null,
       on: [
         {
-          events: "mousedown, touchstart, touchend",
+          events: "mousedown, touchstart, touchend, wheel",
           update: "slice(xRange)"
         }
       ]
@@ -1436,7 +1437,7 @@ const vegaSpec = (width, height, chartStruct) => {
       value: "null",
       on: [
         {
-          events: "mousedown, touchstart, touchend",
+          events: "mousedown, touchstart, touchend, wheel",
           update: "slice(yRange)"
         }
       ]
@@ -1470,6 +1471,11 @@ const vegaSpec = (width, height, chartStruct) => {
             }
           ],
           update: "down ? [-down[0]+x(), -down[0]+x()]: [0,0]"
+        },
+        {
+          events: "view:wheel![!event.item ||!event.item.cursor]",
+          force: true,
+          update: `[-event.deltaX+x(), -event.deltaX+x()]`
         },
         {
           events:
@@ -1526,6 +1532,11 @@ const vegaSpec = (width, height, chartStruct) => {
             }
           ],
           update: "down ? [-down[1]+y(), -down[1]+y()]: [0,0]"
+        },
+        {
+          events: "view:wheel![!event.item ||!event.item.cursor]",
+          force: true,
+          update: `[-event.deltaY+y(), -event.deltaY+y()]`
         },
         {
           events:
