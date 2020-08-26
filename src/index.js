@@ -3,15 +3,12 @@ import * as R from "ramda";
 import {
   applyChanges,
   runVega,
-  // ---------
-  invertSegmentIfUpsideDown,
-  createUnselectAllDatamarksChangesNEW,
-} from './selection'
-
+  createUnselectAllDatamarksChangesNEW
+} from "./selection";
 
 import vegaSpec from "./pivotTable";
 const vegaEmbed = window.vegaEmbed;
-const vega = window.vega;
+//const vega = window.vega;
 
 const USER_DATA = "userData";
 
@@ -48,7 +45,6 @@ const chartStruct = {
     Order: ["Gender", "Size"]
   }
 };
-
 
 const handlePan = (_signal, signalValue) => {
   if (signalValue) {
@@ -183,6 +179,33 @@ const handleResetSelectionClick = (_signal, signalValue) => {
 
   try {
     if (signalValue.selectionIsOn) {
+      // const currentData = vegaView.data("table");
+
+      // const selection = vegaView.data("chartStruct")[0].columnsData.selection
+      //   .name;
+
+      // const datumTuplesToModify = [];
+
+      // currentData.forEach((datum) => {
+      //   if (datum[selection] > 0) {
+      //     datumTuplesToModify.push({
+      //       datum,
+      //       field: [selection],
+      //       value: 0
+      //     });
+      //   }
+      // });
+
+      // applyChanges(vegaView, "table", { datumTuplesToModify });
+      // runVega(vegaView, "table");
+
+      // console.log("reset signalValue", signalValue);
+      // console.log('reset values', createUnselectAllDatamarksChangesNEW(
+      //   vegaView,
+      //   signalValue.chartStructure.columnsData,
+      //   "table"
+      // ))
+
       // applyChanges(
       //   vegaView,
       //   "table",
@@ -203,6 +226,7 @@ const handleResetSelectionClick = (_signal, signalValue) => {
 
 const handleMarkSelectionClick = (_signal, signalValue) => {
   try {
+    console.log("markSelection signalValue", signalValue);
     applyChanges(
       vegaView,
       "table",
@@ -240,17 +264,16 @@ const _getRectBrushSelectionOpsForApi = ({
     const chartStructure = signalValue.chartStructure;
     const columnsData = chartStructure.columnsData;
     const columnsOrder = chartStructure.OrderInfo.Order;
+    const columnsOrderHorz = chartStructure.OrderInfoHOR.Order;
     const xSegmentInDomain = brush.segmentInDomain.x;
-    const ySegmentInDomain = invertSegmentIfUpsideDown(brush.segmentInDomain.y);
+    const ySegmentInDomain = brush.segmentInDomain.y;
 
     const currentData = vegaView.data("table");
-    // Barchart is vertical
-    let quantitativeBrushSegmentInDomain = ySegmentInDomain;
     let categoryBrushList = xSegmentInDomain;
+    let categoryBrushListHorz = ySegmentInDomain;
 
     let categoryExclusiveFlag = xExclusive;
     let quantitativeExclusiveFlag = yExclusive;
-
 
     // Get the name and position of byColumns in domain in order to compare them with datum.
     const nameNIdxOfByColumnTuples = columnsData.Bycolumns.reduce(
@@ -258,6 +281,17 @@ const _getRectBrushSelectionOpsForApi = ({
         acc.push({
           name: byColumn.name,
           orderIdx: columnsOrder.indexOf(byColumn.name)
+        });
+        return acc;
+      },
+      []
+    );
+
+    const nameNIdxOfByColumnTuplesHorz = columnsData.BycolumnsHORIZONTAL.reduce(
+      (acc, byColumn) => {
+        acc.push({
+          name: byColumn.name,
+          orderIdx: columnsOrderHorz.indexOf(byColumn.name)
         });
         return acc;
       },
@@ -279,32 +313,16 @@ const _getRectBrushSelectionOpsForApi = ({
     const indexes = currentData.filter((datum) => {
       return (
         (categoryExclusiveFlag ||
-          // box arround absolute amount :
-          (datum.PivotedAnasenValues >= quantitativeBrushSegmentInDomain[0] &&
-            datum.PivotedAnasenValues <= quantitativeBrushSegmentInDomain[1]) ||
-          // box arround 0 :
-          (quantitativeBrushSegmentInDomain[0] <= 0 &&
-            quantitativeBrushSegmentInDomain[1] >= 0) ||
-          // box inside positive bar (with rect brush only) :
-          (!quantitativeExclusiveFlag &&
-            datum.PivotedAnasenValues >= quantitativeBrushSegmentInDomain[1] &&
-            quantitativeBrushSegmentInDomain[0] >= 0) ||
-          // box inside negative bar (with rect brush only) :
-          (!quantitativeExclusiveFlag &&
-            datum.PivotedAnasenValues <= quantitativeBrushSegmentInDomain[0] &&
-            quantitativeBrushSegmentInDomain[1] <= 0)) &&
+          categoryBrushListHorz.some((categoryTuple) =>
+            nameNIdxOfByColumnTuplesHorz.every((tuple) => {
+              return datum[tuple.name] === categoryTuple[tuple.orderIdx];
+            })
+          )) &&
         (quantitativeExclusiveFlag ||
-          categoryBrushList.some(
-            (categoryTuple) =>
-              nameNIdxOfByColumnTuples.every((tuple) => {
-                return datum[tuple.name] === categoryTuple[tuple.orderIdx];
-              }) &&
-              nameNIdxOfQColumnTuples.every((tuple) => {
-                return (
-                  tuple.orderIdx === -1 ||
-                  datum[tuple.name] === categoryTuple[tuple.orderIdx]
-                ); // the PivotedAnasenColumns does not allways exist
-              })
+          categoryBrushList.some((categoryTuple) =>
+            nameNIdxOfByColumnTuples.every((tuple) => {
+              return datum[tuple.name] === categoryTuple[tuple.orderIdx];
+            })
           ))
       );
     });
@@ -344,9 +362,43 @@ const handleRectangleSelectionBrush = (_signal, signalValue) => {
   }
 };
 
+const handleXSliceSelectionBrush = (_signal, signalValue) => {
+  try {
+    applyChanges(
+      vegaView,
+      "table",
+      _getRectBrushSelectionOpsForApi({
+        vegaView,
+        signalValue,
+        xExclusive: true
+      })
+    );
+    runVega(vegaView, "table");
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+const handleYSliceSelectionBrush = (_signal, signalValue) => {
+  try {
+    applyChanges(
+      vegaView,
+      "table",
+      _getRectBrushSelectionOpsForApi({
+        vegaView,
+        signalValue,
+        yExclusive: true
+      })
+    );
+    runVega(vegaView, "table");
+  } catch (e) {
+    console.error(e);
+  }
+};
+
 document.getElementById("app").innerHTML = `<div id="vega-container"></div>`;
 
-vegaEmbed("#vega-container", vegaSpec(500, 300, chartStruct), {
+vegaEmbed("#vega-container", vegaSpec(500, 250, chartStruct), {
   mode: "vega"
 })
   .then((result) => {
@@ -356,16 +408,22 @@ vegaEmbed("#vega-container", vegaSpec(500, 300, chartStruct), {
     vegaView = result.view;
 
     result.view.addSignalListener("panObj", handlePan);
-
     result.view.addSignalListener(
       "resetSelectionOnClick",
       handleResetSelectionClick
     );
-
     result.view.addSignalListener("OnClickDataMark", handleMarkSelectionClick);
     result.view.addSignalListener(
       "rectBrushForSelection",
       handleRectangleSelectionBrush
+    );
+    result.view.addSignalListener(
+      "sliceXBrushForSelection",
+      handleXSliceSelectionBrush
+    );
+    result.view.addSignalListener(
+      "sliceYBrushForSelection",
+      handleYSliceSelectionBrush
     );
   })
   .catch((error) => {

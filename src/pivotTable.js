@@ -1,16 +1,16 @@
-
 const getEventProxySignal = (config = { minMoveInPixels: 10 }) => ({
-  name: 'eventProxy',
+  name: "eventProxy",
   value: {
     event: null,
     mouseMoveInRange: { x: [0, 0], y: [0, 0] },
     mouseMoveInDomain: { x: [0, 0], y: [0, 0] },
-    polygonInRange: [],
+    polygonInRange: []
   },
   on: [
     // Mousedown
     {
-      events: 'view:mousedown[event.button === 0 && !event.crtlKey && !event.metaKey]',
+      events:
+        "view:mousedown[event.button === 0 && !event.crtlKey && !event.metaKey]",
       update: `{
         event: null,
         domEvent: event,
@@ -18,10 +18,11 @@ const getEventProxySignal = (config = { minMoveInPixels: 10 }) => ({
         mouseMoveInRange: { x: [x(), x()], y: [y(), y()], distance: 0 },
         polygonInRange: [ [ x(), y() ] ],
         polygonInDomain: [ [ invert('xScale', x()), invert('yScale', y()) ] ]
-      }`,
+      }`
     },
     {
-      events: 'view:mousedown[event.button === 0 && !event.crtlKey && !event.metaKey]',
+      events:
+        "view:mousedown[event.button === 0 && !event.crtlKey && !event.metaKey]",
       update: `{
         event: 'mousedown',
         domEvent: eventProxy.event,
@@ -33,13 +34,13 @@ const getEventProxySignal = (config = { minMoveInPixels: 10 }) => ({
         },
         polygonInRange: eventProxy.polygonInRange,
         polygonInDomain: eventProxy.polygonInDomain
-      }`,
+      }`
     },
     // Mousemove
     // polygonInRange: push(eventProxy.polygonInRange, [clamp(x(), 0, width), clamp(y(), 0, height)]),
     {
       events:
-        '[view:mousedown[event.button === 0 && !event.crtlKey && !event.metaKey], window:mouseup] > window:mousemove!',
+        "[view:mousedown[event.button === 0 && !event.crtlKey && !event.metaKey], window:mouseup] > window:mousemove!",
       update: `{
         event: eventProxy.event,
         domEvent: event,
@@ -49,11 +50,11 @@ const getEventProxySignal = (config = { minMoveInPixels: 10 }) => ({
           y:[eventProxy.mouseMoveInRange.y[0] , y()],
           distance: eventProxy.mouseMoveInRange.distance
         }
-      }`,
+      }`
     },
     {
       events:
-        '[view:mousedown[event.button === 0 && !event.crtlKey && !event.metaKey], window:mouseup] > window:mousemove!',
+        "[view:mousedown[event.button === 0 && !event.crtlKey && !event.metaKey], window:mouseup] > window:mousemove!",
       update: `{
         event: eventProxy.event,
         domEvent: event,
@@ -69,11 +70,11 @@ const getEventProxySignal = (config = { minMoveInPixels: 10 }) => ({
         },
         polygonInRange: eventProxy.polygonInRange,
         polygonInDomain: eventProxy.polygonInDomain,
-      }`,
+      }`
     },
     {
       events:
-        '[view:mousedown[event.button === 0 && !event.crtlKey && !event.metaKey], window:mouseup] > window:mousemove!',
+        "[view:mousedown[event.button === 0 && !event.crtlKey && !event.metaKey], window:mouseup] > window:mousemove!",
       update: `{
         event: eventProxy.event,
         domEvent: event,
@@ -88,11 +89,11 @@ const getEventProxySignal = (config = { minMoveInPixels: 10 }) => ({
         mouseMoveInDomain: eventProxy.mouseMoveInDomain,
         polygonInRange: eventProxy.polygonInRange,
         polygonInDomain: eventProxy.polygonInDomain,
-      }`,
+      }`
     },
     {
       events:
-        '[view:mousedown[event.button === 0 && !event.crtlKey && !event.metaKey], window:mouseup] > window:mousemove!',
+        "[view:mousedown[event.button === 0 && !event.crtlKey && !event.metaKey], window:mouseup] > window:mousemove!",
       update: `{
         event:
           (abs(eventProxy.mouseMoveInRange.deltaX) >= ${config.minMoveInPixels} || abs(eventProxy.mouseMoveInRange.deltaY) >= 10)
@@ -104,11 +105,11 @@ const getEventProxySignal = (config = { minMoveInPixels: 10 }) => ({
         mouseMoveInDomain: eventProxy.mouseMoveInDomain,
         polygonInRange: eventProxy.polygonInRange,
         polygonInDomain: eventProxy.polygonInDomain
-      }`,
+      }`
     },
     {
       events:
-        '[view:mousedown[event.button === 0 && !event.crtlKey && !event.metaKey], window:mouseup] > window:mousemove!',
+        "[view:mousedown[event.button === 0 && !event.crtlKey && !event.metaKey], window:mouseup] > window:mousemove!",
       update: `{
         event: event.buttons === 0 ? ((eventProxy.event !== 'startdrawingshape' && eventProxy.event !== 'drawingshape') ? 'click': 'stopdrawingshape') : eventProxy.event,
         domEvent: event,
@@ -117,11 +118,12 @@ const getEventProxySignal = (config = { minMoveInPixels: 10 }) => ({
         mouseMoveInDomain: eventProxy.mouseMoveInDomain,
         polygonInRange: eventProxy.polygonInRange,
         polygonInDomain: eventProxy.polygonInDomain
-      }`,
+      }`
     },
     // Mouseup
     {
-      events: 'view:mouseup[event.button === 0 && !event.crtlKey && !event.metaKey]',
+      events:
+        "view:mouseup[event.button === 0 && !event.crtlKey && !event.metaKey]",
       update: `
         {
           event: (eventProxy.event !== 'startdrawingshape' && eventProxy.event !== 'drawingshape') ? 'click': 'stopdrawingshape',
@@ -131,10 +133,11 @@ const getEventProxySignal = (config = { minMoveInPixels: 10 }) => ({
           mouseMoveInDomain: eventProxy.mouseMoveInDomain,
           polygonInRange: eventProxy.polygonInRange,
           polygonInDomain: eventProxy.polygonInDomain
-        }`,
+        }`
     },
     {
-      events: 'window:mouseup[event.button === 0 && !event.crtlKey && !event.metaKey]',
+      events:
+        "window:mouseup[event.button === 0 && !event.crtlKey && !event.metaKey]",
       update: `
         {
           event: (eventProxy.event !== 'click' && eventProxy.event !== 'stopdrawingshape' ||
@@ -145,16 +148,15 @@ const getEventProxySignal = (config = { minMoveInPixels: 10 }) => ({
           mouseMoveInDomain: eventProxy.mouseMoveInDomain,
           polygonInRange: eventProxy.polygonInRange,
           polygonInDomain: eventProxy.polygonInDomain
-        }`,
-    },
+        }`
+    }
 
     /* {
       "events": "window:mouseout",
       "update": "{ event: null, domEvent: event, item: event.item, mouseMoveInRange: { x: [x(), x()], y: [y(), y()] } }"
     } */
-  ],
-})
-
+  ]
+});
 
 const vegaSpec = (width, height, chartStruct) => {
   const typography = {
@@ -1285,7 +1287,7 @@ const vegaSpec = (width, height, chartStruct) => {
     {
       name: "test",
       update:
-        "warn('userData',length(data('userData')) > 0 && data('userData'))"
+        "warn('selectedbars',length(data('selectedbars')) > 0 && data('selectedbars'))"
     },
     // {
     //   name: "test2",
@@ -1373,7 +1375,7 @@ const vegaSpec = (width, height, chartStruct) => {
       value: false,
       on: [
         {
-          events: "@outlinesHover:click",
+          events: "view:click",
           update: `{ selectionIsOn: selectionIsOn,       
               chartStructure: data('chartStruct')[0],           
               unionDomain: unionDomain,             
@@ -1388,13 +1390,13 @@ const vegaSpec = (width, height, chartStruct) => {
         {
           events: "@outlinesHover:click",
           //force: true,
-          update: `warn('clickDataMark', 
+          update: `
             eventProxy.event === 'click'
             ? { chartStructure: data('chartStruct')[0], 
                 value: datum,
                 shiftKey: event.shiftKey,    
                 altKey: event.altKey }         
-            : OnClickDataMark)`
+            : OnClickDataMark`
         }
       ]
     },
@@ -1747,11 +1749,6 @@ const vegaSpec = (width, height, chartStruct) => {
       ]
     },
     {
-      test: "testum",
-      update: "warn('ranges',catRangeNormalized, catRangeNormalizedHORIZONTAL)"
-    },
-
-    {
       name: "xRange",
       update: "[catRangeNormalized[0]*width,catRangeNormalized[1]*width]"
     },
@@ -1940,22 +1937,6 @@ const vegaSpec = (width, height, chartStruct) => {
         }
       ]
     },
-    {
-      name: "testViewClick",
-      init: "now()",
-      on: [
-        {
-          events:
-            "[view:mousedown[event.button === 0 && !event.ctrlKey], window:mouseup] > window:mousemove!",
-          update: `{ 
-            state: eventProxy.event,
-            segmentInRange: eventProxy.mouseMoveInRange,              
-            segmentInDomain: eventProxy.mouseMoveInDomain
-          }`
-        }
-      ]
-    },
-    { name: "testBrush", update: "warn('testViewClick', testViewClick)" },
     {
       name: "sliceXBrush",
       value: {
@@ -2425,7 +2406,7 @@ const vegaSpec = (width, height, chartStruct) => {
             { test: "sliceXBrush.state === 'resizing'", value: "#8b9bac" },
             { value: null }
           ],
-          height: { signal: "height" },
+          height: { signal: "tableHeight" },
           fillOpacity: {
             signal: "(sliceXBrush.state === 'resizing') ? 0.2 : 0"
           },
