@@ -1,4 +1,4 @@
-import buildTooltip from './buildTooltip'
+import buildTooltip from './buildTooltipPivotTable'
 import {
   linearGradientBlue,
   linearGradientBluePastel,
@@ -1499,7 +1499,7 @@ const vegaSpec = (width, height, chartStruct) => {
         {
           events: "view:wheel![!event.item ||!event.item.cursor]",
           force: true,
-          update: `[-event.deltaX, -event.deltaX]`
+          update: `[-event.deltaX/30, -event.deltaX/20]`
         },
         {
           events:
@@ -2545,7 +2545,7 @@ const vegaSpec = (width, height, chartStruct) => {
           on: [
             {
               events: { signal: "brush" },
-              update: "span(brush) ? brush : null"
+              update: "warn('brush', span(brush) ? brush : null)"
             }
           ]
         }

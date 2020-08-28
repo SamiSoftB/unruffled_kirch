@@ -124,8 +124,6 @@ const _createSelectDataMarkChanges = (
     "PivotedAnasenValues_Selection"; /* columnsData.QSelectedColumn.name */
   const datumIdxColName = columnsData.idx.name;
 
-  console.log("values", values);
-
   currentData.forEach((datum) => {
     const isIntendedForSelection = values.some(
       (value) => value[datumIdxColName] === datum[datumIdxColName]
