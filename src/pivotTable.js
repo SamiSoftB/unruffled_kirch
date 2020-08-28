@@ -1,3 +1,11 @@
+import buildTooltip from './buildTooltip'
+import {
+  linearGradientBlue,
+  linearGradientBluePastel,
+  divergentGradientBlueRed,
+  divergentGradientBlueRedPastel,
+} from './chartsStyling'
+
 const getEventProxySignal = (config = { minMoveInPixels: 10 }) => ({
   name: "eventProxy",
   value: {
@@ -1248,9 +1256,25 @@ const vegaSpec = (width, height, chartStruct) => {
   ].concat(AxisDataLevels);
 
   const signals = [
+    {
+      name: 'containsZero',
+      update: 'PivotedAnasenValues_Extent[0] && PivotedAnasenValues_Extent[0]*PivotedAnasenValues_Extent[1]<0'
+    },
+    {
+      name: 'chooseGradient',
+      update: `containsZero
+  ? ['${divergentGradientBlueRed[0]}', '${divergentGradientBlueRed[1]}', '${divergentGradientBlueRed[2]}'] 
+  : ['${linearGradientBlue[0]}', '${linearGradientBlue[1]}']`,
+    },
+    {
+      name: 'chooseGradientPastel',
+      update: `containsZero 
+    ? ['${divergentGradientBlueRedPastel[0]}', '${divergentGradientBlueRedPastel[1]}', '${divergentGradientBlueRedPastel[2]}'] 
+    : ['${linearGradientBluePastel[0]}', '${linearGradientBluePastel[1]}']`,
+    },
     { name: "detailDomain" },
     { name: "detailDomainHorz" },
-    { name: "cellHeight", update: "20" },
+    { name: "cellHeight", update: "30" },
     { name: "cellWidth", update: "80" },
     { name: "tableHeight", update: "NHOR*cellHeight" },
     { name: "tableWidth", update: "N*cellWidth" },
@@ -1375,7 +1399,7 @@ const vegaSpec = (width, height, chartStruct) => {
       value: false,
       on: [
         {
-          events: "view:click",
+          events: "@plottingArea:click",
           filter: ["!@outlinesHover:click"],
           update: `{ selectionIsOn: selectionIsOn,       
               chartStructure: data('chartStruct')[0],           
@@ -1475,7 +1499,7 @@ const vegaSpec = (width, height, chartStruct) => {
         {
           events: "view:wheel![!event.item ||!event.item.cursor]",
           force: true,
-          update: `[-event.deltaX+x(), -event.deltaX+x()]`
+          update: `[-event.deltaX, -event.deltaX]`
         },
         {
           events:
@@ -1536,7 +1560,7 @@ const vegaSpec = (width, height, chartStruct) => {
         {
           events: "view:wheel![!event.item ||!event.item.cursor]",
           force: true,
-          update: `[-event.deltaY+y(), -event.deltaY+y()]`
+          update: `[-event.deltaY, -event.deltaY]`
         },
         {
           events:
@@ -2079,19 +2103,19 @@ const vegaSpec = (width, height, chartStruct) => {
     }
   ];
   const marks = [
-    // {
-    //   type: "rect",
-    //   name: "plottingArea",
-    //   encode: {
-    //     update: {
-    //       x: { value: 0 },
-    //       width: { signal: "width" },
-    //       y: { value: 0 },
-    //       height: { signal: "height" },
-    //       fill: { value: 'green' }
-    //     }
-    //   }
-    // },
+    {
+      type: "rect",
+      name: "plottingArea",
+      encode: {
+        update: {
+          x: { value: 0 },
+          width: { signal: "width" },
+          y: { value: 0 },
+          height: { signal: "height" },
+          fill: { value: 'transparent' }
+        }
+      }
+    },
     {
       name: "databars",
       type: "rect",
@@ -2298,9 +2322,7 @@ const vegaSpec = (width, height, chartStruct) => {
           y: { scale: "yScale", field: "ANASENLabelsHORIZONTAL" },
           height: { scale: "yScale", band: 1 },
           fill: { scale: "colorFull", field: "PivotedAnasenValues" },
-          tooltip: { signal: "datum" }
-        },
-        hover: {}
+        }
       }
     },
     {
@@ -2333,10 +2355,10 @@ const vegaSpec = (width, height, chartStruct) => {
       type: "rect",
       from: { data: "table" },
       clip: true,
-      // interactive: {
-      //   signal:
-      //     "eventProxy.event !== 'drawingshape' && eventProxy.event !== 'startdrawingshape'"
-      // },
+      interactive: {
+        signal:
+          "eventProxy.event !== 'drawingshape' && eventProxy.event !== 'startdrawingshape'"
+      },
       encode: {
         enter: { stroke: { value: "black" }, strokeOpacity: { value: 1 } },
         update: {
@@ -2346,7 +2368,7 @@ const vegaSpec = (width, height, chartStruct) => {
           height: { scale: "yScale", band: 1 },
           fill: { value: "transparent" },
           strokeWidth: { value: 0 },
-          tooltip: { signal: "datum" }
+          tooltip: { signal: buildTooltip(chartStruct) }
         },
         exit: { strokeWidth: { value: 0 } },
         hover: { strokeWidth: { value: 1 }, zindex: { value: 1 } }
@@ -2643,39 +2665,63 @@ const vegaSpec = (width, height, chartStruct) => {
       paddingInner: { signal: "paddingCatScale.Inner" },
       paddingOuter: { signal: "paddingCatScale.Outer" }
     },
+    // {
+    //   name: "colorFull",
+    //   type: "linear",
+    //   domain: { data: "table", field: "PivotedAnasenValues" },
+    //   range: [
+    //     "#7F9FF3",
+    //     "#FFA666",
+    //     "#6BD27B",
+    //     "#FD7473",
+    //     "#BE96EB",
+    //     "#A67A71",
+    //     "#FFA3C4",
+    //     "#BABABA",
+    //     "#FFE040",
+    //     "#6CD8D2"
+    //   ]
+    // },
+    // {
+    //   name: "colorLight",
+    //   type: "linear",
+    //   domain: { data: "table", field: "PivotedAnasenValues" },
+    //   range: [
+    //     "#D9E3FC",
+    //     "#FFE5D2",
+    //     "#D3F2D8",
+    //     "#FFD6D5",
+    //     "#ECE0F9",
+    //     "#E5D8D5",
+    //     "#FFE4EE",
+    //     "#EBEBEB",
+    //     "#FFF6C6",
+    //     "#D3F4F2"
+    //   ]
+    // }
     {
-      name: "colorFull",
-      type: "linear",
-      domain: { data: "table", field: "PivotedAnasenValues" },
-      range: [
-        "#7F9FF3",
-        "#FFA666",
-        "#6BD27B",
-        "#FD7473",
-        "#BE96EB",
-        "#A67A71",
-        "#FFA3C4",
-        "#BABABA",
-        "#FFE040",
-        "#6CD8D2"
-      ]
+      name: 'colorFull',
+      type: 'linear',
+      interpolate: 'hcl',
+      zero: false,
+      domain: [
+        { signal: 'PivotedAnasenValues_Extent[0]' },
+        { signal: '(PivotedAnasenValues_Extent[0]+PivotedAnasenValues_Extent[1])/2' },
+        { signal: 'PivotedAnasenValues_Extent[1]' },
+      ],
+      range: { signal: 'chooseGradient' },
     },
     {
-      name: "colorLight",
-      type: "linear",
-      domain: { data: "table", field: "PivotedAnasenValues" },
-      range: [
-        "#D9E3FC",
-        "#FFE5D2",
-        "#D3F2D8",
-        "#FFD6D5",
-        "#ECE0F9",
-        "#E5D8D5",
-        "#FFE4EE",
-        "#EBEBEB",
-        "#FFF6C6",
-        "#D3F4F2"
-      ]
+      name: 'colorLight',
+      type: 'linear',
+      interpolate: 'hcl',
+      zero: false,
+      domain: [
+        { signal: 'PivotedAnasenValues_Extent[0]' },
+        { signal: '(PivotedAnasenValues_Extent[0]+PivotedAnasenValues_Extent[1])/2' },
+        { signal: 'PivotedAnasenValues_Extent[1]' },
+      ],
+      range: { signal: 'chooseGradientPastel' },
     }
   ].concat(scaleLevels);
 

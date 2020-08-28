@@ -1,16 +1,18 @@
-import * as R from "ramda";
+//import * as R from "ramda";
 
 import {
   applyChanges,
-  runVega,
-  createUnselectAllDatamarksChangesNEW
+  runVega
 } from "./selection";
 
 import vegaSpec from "./pivotTable";
 const vegaEmbed = window.vegaEmbed;
-//const vega = window.vega;
+const vega = window.vega;
 
-const USER_DATA = "userData";
+const createObject = (x, y) => {
+  return { [x]: y }
+}
+vega.expressionFunction('createObject', createObject)
 
 let vegaView;
 
@@ -179,21 +181,22 @@ const handleResetSelectionClick = (_signal, signalValue) => {
 
   try {
     if (signalValue.selectionIsOn) {
-      // const currentData = vegaView.data("table");
-      // const selection = vegaView.data("chartStruct")[0].columnsData.selection
-      //   .name;
-      // const datumTuplesToModify = [];
-      // currentData.forEach((datum) => {
-      //   if (datum[selection] > 0) {
-      //     datumTuplesToModify.push({
-      //       datum,
-      //       field: selection,
-      //       value: 0
-      //     });
-      //   }
-      // });
-      // applyChanges(vegaView, "table", { datumTuplesToModify });
-      // runVega(vegaView, "table");
+      const currentData = vegaView.data("table");
+      const selection = vegaView.data("chartStruct")[0].columnsData.selection
+        .name;
+      const datumTuplesToModify = [];
+      currentData.forEach((datum) => {
+        if (datum[selection] > 0) {
+          datumTuplesToModify.push({
+            datum,
+            field: selection,
+            value: 0
+          });
+        }
+      });
+      applyChanges(vegaView, "table", { datumTuplesToModify });
+      runVega(vegaView, "table");
+      
       // vegaView.runAsync()
       // console.log("reset signalValue", signalValue);
       // console.log('reset values', createUnselectAllDatamarksChangesNEW(
@@ -394,7 +397,7 @@ const handleYSliceSelectionBrush = (_signal, signalValue) => {
 
 document.getElementById("app").innerHTML = `<div id="vega-container"></div>`;
 
-vegaEmbed("#vega-container", vegaSpec(150, 120, chartStruct), {
+vegaEmbed("#vega-container", vegaSpec(250, 320, chartStruct), {
   mode: "vega"
 })
   .then((result) => {
